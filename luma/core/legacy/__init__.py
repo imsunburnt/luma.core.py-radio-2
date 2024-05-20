@@ -14,6 +14,7 @@ from luma.core.virtual import viewport
 from luma.core.sprite_system import framerate_regulator
 from luma.core.legacy.font import DEFAULT_FONT
 
+MY_STOP_FLAG = False
 
 def textsize(txt, font=None):
     """
@@ -57,6 +58,10 @@ def text(draw, xy, txt, fill=None, font=None):
                 byte >>= 1
             x += 1
 
+def stop_scrolling():
+    global MY_STOP_FLAG
+    print("luma.legacy stop_scrolling")
+    MY_STOP_FLAG = True
 
 def show_message(device, msg, y_offset=0, fill=None, font=None,
                  scroll_delay=0.03):
@@ -74,6 +79,7 @@ def show_message(device, msg, y_offset=0, fill=None, font=None,
     :param scroll_delay: The number of seconds to delay between scrolling.
     :type scroll_delay: float
     """
+    global MY_STOP_FLAG
     fps = 0 if scroll_delay == 0 else 1.0 / scroll_delay
     regulator = framerate_regulator(fps)
     font = font or DEFAULT_FONT
@@ -91,3 +97,8 @@ def show_message(device, msg, y_offset=0, fill=None, font=None,
         with regulator:
             virtual.set_position((i, 0))
             i += 1
+        if(MY_STOP_FLAG):
+            MY_STOP_FLAG = False
+            with canvas(virtual) as draw:
+                text(draw, (x, y_offset), "    ", font=font, fill=fill)
+            i = w + x + 1
